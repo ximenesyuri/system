@@ -9,8 +9,8 @@ authors = [
     {"name" = "Your Name", "email" = "you@email.com"},
 ]
 dependencies = [
-    "typed @ git+https://github.com/ximenesyuri/typed.git",
-    "utils @ git+https://github.com/ximenesyuri/utils.git",
+    "typed @ git+https://github.com/ximenesyuri/typed",
+    "utils @ git+https://github.com/ximenesyuri/utils",
 ]
 
 [build-system]
