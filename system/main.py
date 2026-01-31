@@ -1,51 +1,22 @@
 import functools
-from typed import typed, model, Str, Int, Bytes, Maybe, Dict, Union, Any, Bool
+from typed import typed, model, Str, Int, Bytes, Maybe, Dict, Union, Any, Bool, Enum
+from typed.models import MODEL, LAZY_MODEL, validate
 from utils import func
 from utils.types import Json, Client
 from utils.general import Message
 
 Data = Union(Json, Str, Int, Bytes)
+Status = Enum(Str, "success", "failure")
+Model = Union(MODEL, LAZY_MODEL)
 
 @model
 class Result:
     message: Maybe(Str)=None
     data:    Maybe(Data)=None
     success: Bool=True
+    code:    Maybe(Int)=None
 
 Result.__display__ = "Result"
-
-class result:
-    @typed
-    def success(action: Any=None, message: Maybe(Str)=None, data: Maybe(Data)=None, **kwargs: Dict(Str)) -> Result:
-        if action is not None:
-            if message is not None or data is not None:
-                raise ValueError("Cannot simultaneously set an action and a message/data")
-            return action(**kwargs).success
-        return Result(
-            message=Message(message=message, **kwargs) if message or kwargs else None,
-            data=data,
-            success=True
-        )
-
-    @typed
-    def failure(action: Any=None, message: Maybe(Str)=None, data: Maybe(Data)=None, **kwargs: Dict(Str)) -> Result:
-        if action is not None:
-            if message is not None or data is not None:
-                raise ValueError("Cannot simultaneously set an action and a message/data")
-            return not action(**kwargs).success
-        return Result(
-            message=Message(message=message, **kwargs) if message or kwargs else None,
-            data=data,
-            success=False
-        )
-
-    @typed
-    def data(action: Any, propagate: Bool=True, **kwargs: Dict(Str)) -> Maybe(Data):
-        res = action(**kwargs)
-        if propagate:
-            globals()['propagate'].failure(res)
-        return res.data
-
 
 class _Propagate(Exception):
     def __init__(self, result):
@@ -64,6 +35,60 @@ class propagate:
             raise _Propagate(res)
         return res
 
+class result:
+    @typed
+    def success(
+        action:   Any=None,
+        message:  Maybe(Str)=None,
+        data:     Maybe(Data)=None,
+        code:     Maybe(Int)=None,
+        **kwargs: Dict(Str)
+    ) -> Result:
+        if action is not None:
+            if message is not None or data is not None:
+                raise ValueError("Cannot simultaneously set an action and a message/data")
+            return action(**kwargs).success
+        return Result(
+            message=Message(message=message, **kwargs) if message or kwargs else None,
+            data=data,
+            success=True,
+            code=code
+        )
+
+    @typed
+    def failure(
+        action: Any=None,
+        message: Maybe(Str)=None,
+        data: Maybe(Data)=None,
+        code: Maybe(Int)=None,
+        **kwargs: Dict(Str)
+    ) -> Result:
+        if action is not None:
+            if message is not None or data is not None:
+                raise ValueError("Cannot simultaneously set an action and a message/data")
+            return not action(**kwargs).success
+        return Result(
+            message=Message(message=message, **kwargs) if message or kwargs else None,
+            data=data,
+            code=code,
+            success=False
+        )
+
+    @typed
+    def data(
+        action:    Any,
+        model:     Maybe(Model)=None,
+        propagate: Status="failure",
+        **kwargs: Dict(Str)
+    ) -> Data:
+        res = action(**kwargs)
+        if propagate == "failure":
+            globals()['propagate'].failure(res)
+        if propagate == "success":
+            globals()['propagate'].success(res)
+        if model:
+            return validate(res.data, model)
+        return res.data
 
 class Action:
     success = staticmethod(result.success)
@@ -72,10 +97,19 @@ class Action:
     propagate = propagate
 
     @typed
-    def run(action: Any, propagate: Bool=True, **kwargs: Dict(Str)) -> Result:
+    def run(
+        action:    Any,
+        model:     Maybe(Model)=None,
+        propagate: Status="failure",
+        **kwargs:  Dict(Str)
+    ) -> Result:
         res = action(**kwargs)
-        if propagate:
+        if propagate == "failure":
             globals()['propagate'].failure(res)
+        if propagate == "success":
+            globals()['propagate'].success(res)
+        if model:
+            validate(res.data, model)
         return res
 
     def __init__(self, Error=None, message=None):
