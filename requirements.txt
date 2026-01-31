@@ -1,2 +1,2 @@
-git+https://github.com/ximenesyuri/typed.git
-git+https://github.com/ximenesyuri/utils.git
+git+https://github.com/ximenesyuri/typed
+git+https://github.com/ximenesyuri/utils
