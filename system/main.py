@@ -1,13 +1,12 @@
 import functools
 from typed import typed, model, Str, Int, Bytes, Maybe, Dict, Union, Any, Bool, Enum
-from typed.models import MODEL, LAZY_MODEL, validate
+from typed.types import Callable
 from utils import func
 from utils.types import Json, Client
 from utils.general import Message
 
 Data = Union(Json, Str, Int, Bytes)
 Status = Enum(Str, "success", "failure")
-Model = Union(MODEL, LAZY_MODEL)
 
 @model
 class Result:
@@ -77,17 +76,17 @@ class result:
     @typed
     def data(
         action:    Any,
-        model:     Maybe(Model)=None,
+        callback:  Maybe(Callable)=None,
         propagate: Status="failure",
-        **kwargs: Dict(Str)
+        **kwargs:  Dict(Str)
     ) -> Data:
         res = action(**kwargs)
         if propagate == "failure":
             globals()['propagate'].failure(res)
         if propagate == "success":
             globals()['propagate'].success(res)
-        if model:
-            return validate(res.data, model)
+        if callback:
+            return callback(res.data)
         return res.data
 
 class Action:
@@ -99,7 +98,7 @@ class Action:
     @typed
     def run(
         action:    Any,
-        model:     Maybe(Model)=None,
+        callback:  Maybe(Callable)=None,
         propagate: Status="failure",
         **kwargs:  Dict(Str)
     ) -> Result:
@@ -108,8 +107,8 @@ class Action:
             globals()['propagate'].failure(res)
         if propagate == "success":
             globals()['propagate'].success(res)
-        if model:
-            validate(res.data, model)
+        if callback:
+            return callback(res)
         return res
 
     def __init__(self, Error=None, message=None):
