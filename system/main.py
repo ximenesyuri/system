@@ -7,6 +7,7 @@ from utils.general import Message
 
 Data = Union(Json, Str, Int, Bytes)
 Status = Enum(Str, "success", "failure")
+class Client: pass
 
 @model
 class Result:
@@ -88,6 +89,8 @@ class result:
         if callback:
             return callback(res.data)
         return res.data
+
+    propagate = propagate
 
 class Action:
     success = staticmethod(result.success)
