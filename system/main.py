@@ -2,7 +2,7 @@ import functools
 from typed import typed, model, Str, Int, Bytes, Maybe, Dict, Union, Any, Bool, Enum
 from typed.types import Callable
 from utils import func
-from utils.types import Json, Client
+from utils.types import Json
 from utils.general import Message
 
 Data = Union(Json, Str, Int, Bytes)
