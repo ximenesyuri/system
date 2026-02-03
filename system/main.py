@@ -3,7 +3,7 @@ from typed import typed, model, Str, Int, Bytes, Maybe, Dict, Union, Any, Bool, 
 from typed.types import Callable
 from utils import func
 from utils.types import Json
-from utils.general import Message
+from utils.general import message as _message
 
 Data = Union(Json, Str, Int, Bytes)
 Status = Enum(Str, "success", "failure")
@@ -49,7 +49,7 @@ class result:
                 raise ValueError("Cannot simultaneously set an action and a message/data")
             return action(**kwargs).success
         return Result(
-            message=Message(message=message, **kwargs) if message or kwargs else None,
+            message=_message(message=message, **kwargs) if message or kwargs else None,
             data=data,
             success=True,
             code=code
@@ -68,7 +68,7 @@ class result:
                 raise ValueError("Cannot simultaneously set an action and a message/data")
             return not action(**kwargs).success
         return Result(
-            message=Message(message=message, **kwargs) if message or kwargs else None,
+            message=_message(message=message, **kwargs) if message or kwargs else None,
             data=data,
             code=code,
             success=False
