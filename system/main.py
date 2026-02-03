@@ -7,22 +7,32 @@ from utils.general import message as _message
 
 Data = Union(Json, Str, Int, Bytes)
 Status = Enum(Str, "success", "failure")
-class Client: pass
 
 @model
-class Result:
+class Client: pass
+
+Data.__display__ = "Data"
+Status.__display__ = "Status"
+Client.__display__ = "Client"
+
+@model
+class Message:
     message: Maybe(Str)=None
     data:    Maybe(Data)=None
     success: Bool=True
     code:    Maybe(Int)=None
 
+@model
+class Result(Message): pass
+
+Message.__display__ = "Message"
 Result.__display__ = "Result"
 
 class _Propagate(Exception):
     def __init__(self, result):
         self.result = result
 
-class propagate:
+class _propagate:
     @typed
     def failure(res: Result) -> Result:
         if not res.success:
@@ -90,13 +100,13 @@ class result:
             return callback(res.data)
         return res.data
 
-    propagate = propagate
+    propagate = _propagate
 
 class Action:
     success = staticmethod(result.success)
     failure = staticmethod(result.failure)
     data = staticmethod(result.data)
-    propagate = propagate
+    propagate = _propagate
 
     @typed
     def run(
