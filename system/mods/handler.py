@@ -137,6 +137,11 @@ class handler:
 
         if f is not None and callable(f):
             return _decorate(f)
+
+        _decorate.data = cls.data
+        _decorate.success = cls.success
+        _decorate.failure = cls.failure
+        _decorate.propagate = cls.propagate
         return _decorate
 
 @model
