@@ -87,6 +87,12 @@ class HandlerFactory:
 
         if f is not None and callable(f):
             return _decorate(f)
+
+        _decorate.data = self.data
+        _decorate.success = self.success
+        _decorate.failure = self.failure
+        _decorate.propagate = self.propagate
+
         return _decorate
 
     def __get__(self, instance, owner):
