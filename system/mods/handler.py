@@ -22,23 +22,29 @@ class HANDLER(TYPED):
         return cod <= Message
 
     def __call__(cls, *args, **kwargs):
-        if args:
-            raise TypeError(
-                "Handler(...) as a factory accepts only keyword arguments: "
-                "message=..., validators=..., name=..., kind=..., desc=..."
-            )
-
         from system.mods.builder import HandlerFactory
 
-        msg_type   = kwargs.pop("message", Message)
+        msg_type_from_arg = None
+        if args:
+            if len(args) > 1:
+                raise TypeError(
+                    "Handler(...) accepts at most one positional argument: the message type"
+                )
+            msg_type_from_arg = args[0]
+
+        if "message" in kwargs and msg_type_from_arg is not None:
+            raise TypeError(
+                "Handler(...): specify message type either as positional arg "
+                "or as 'message=...', not both"
+            )
+
+        msg_type   = msg_type_from_arg or kwargs.pop("message", Message)
         validators = kwargs.pop("validators", ())
         name       = kwargs.pop("name", "handler")
         kind       = kwargs.pop("kind", None)
         desc       = kwargs.pop("desc", None)
 
-        if kwargs:
-            extra = ", ".join(sorted(kwargs.keys()))
-            raise TypeError(f"Unexpected keyword arguments for Handler(...): {extra}")
+        base_kwargs = kwargs  # whatever is left
 
         return HandlerFactory(
             msg_type=msg_type,
@@ -46,6 +52,7 @@ class HANDLER(TYPED):
             kind=(kind or name),
             validators=validators,
             desc=desc,
+            base_kwargs=base_kwargs,
         )
 
 class Handler(Typed, metaclass=HANDLER):

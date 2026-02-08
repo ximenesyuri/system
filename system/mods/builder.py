@@ -3,7 +3,7 @@ from functools import wraps, partial
 from typed import name
 from system.mods.system_ import System, SYSTEM
 from system.mods.component import Component, COMPONENT, include_method
-from system.mods.handler import handler, HandlerInfo, register_handler
+from system.mods.handler import handler, HandlerInfo, register_handler, Handler
 from system.mods.message import Message
 from system.mods.helper import _normalize_path
 
@@ -23,13 +23,14 @@ def class_only(func):
     return _ClassOnly(func)
 
 class HandlerFactory:
-    def __init__(self, *, msg_type=Message, name="handler", kind=None, validators=(), desc=None) -> None:
+    def __init__(self, *, msg_type=Message, name="handler", kind=None, validators=(), desc=None, base_kwargs=None) -> None:
         self.msg_type = msg_type
         self.name = name
         self.kind = kind or name
         self.validators = tuple(validators)
         self.desc = desc
         self.propagate = handler.propagate
+        self.base_kwargs = dict(base_kwargs or {})
 
     def with_validators(self, *validators, name=None, kind=None, desc=None):
         return HandlerFactory(
@@ -38,9 +39,12 @@ class HandlerFactory:
             kind=kind or self.kind,
             validators=self.validators + tuple(validators),
             desc=desc if desc is not None else self.desc,
+            base_kwargs=self.base_kwargs
         )
 
     def __call__(self, f=None, **kwargs):
+        all_kwargs = {**self.base_kwargs, **kwargs}
+
         def _decorate(func):
             orig = func
 
@@ -62,7 +66,7 @@ class HandlerFactory:
                 ann["return"] = self.msg_type
                 target.__annotations__ = ann
 
-            h = handler(target, **kwargs)
+            h = handler(target, **all_kwargs)
 
             cod = getattr(h, "cod", None)
             if self.msg_type is not None and cod is not None:
@@ -184,10 +188,14 @@ class HandlerFactory:
             code=base.code,
         )
 
-def new_handler(message=Message, validators=()):
-    return HandlerFactory(
-        msg_type=message,
+def new_handler(message=Message, *, validators=(), name="handler", kind=None, desc=None, **kwargs):
+    return Handler(
+        message,
         validators=validators,
+        name=name,
+        kind=kind,
+        desc=desc,
+        **kwargs,
     )
 
 def new_system(name, desc="", *bases):
