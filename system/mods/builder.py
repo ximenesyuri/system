@@ -323,3 +323,8 @@ def new_component(name="Component", desc="", *bases):
     cls = COMPONENT(name, bases, namespace)
     cls._allowed_components = {cls}
     return cls
+
+class new:
+    handler = new_handler
+    system = new_system
+    component = new_component

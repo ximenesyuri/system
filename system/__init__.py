@@ -6,20 +6,18 @@ __all__ = [
     "Handler",
     "System",
     "Component",
-    "new_handler", "new_system", "new_component"
+    "new"
 ]
 
 __lazy__ = {
-    "Data":          ("system.mods.message", "Data"),
-    "Status":        ("system.mods.message", "Status"),
-    "Message":       ("system.mods.message", "Message"),
-    "message":       ("system.mods.message", "message"),
-    "Handler":       ("system.mods.handler", "Handler"),
-    "System":        ("system.mods.system_", "System"),
-    "Component":     ("system.mods.component", "Component"),
-    "new_handler":   ("system.mods.builder", "new_handler"),
-    "new_system":    ("system.mods.handler", "new_system"),
-    "new_component": ("system.mods.handler", "new_component"),
+    "Data":      ("system.mods.message", "Data"),
+    "Status":    ("system.mods.message", "Status"),
+    "Message":   ("system.mods.message", "Message"),
+    "message":   ("system.mods.message", "message"),
+    "Handler":   ("system.mods.handler", "Handler"),
+    "System":    ("system.mods.system_", "System"),
+    "Component": ("system.mods.component", "Component"),
+    "new":       ("system.mods.builder", "new")
 }
 
 def __getattr__(name):
@@ -42,4 +40,4 @@ if __lsp__:
     from system.mods.handler   import Handler
     from system.mods.system_   import System
     from system.mods.component import Component
-    from system.mods.builder   import new_handler, new_system, new_component
+    from system.mods.builder   import new
