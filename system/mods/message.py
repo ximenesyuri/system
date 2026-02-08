@@ -21,7 +21,10 @@ Data = Union(Dict, List, Set, Str, Int, Bytes)
 Status = Enum(Str, "success", "failure")
 
 @typed
-def message(message: Str="", handler: Maybe(Callable)=None, **kwargs: Dict(Str)) -> Any:
+def message(message: Maybe(Str)=None, handler: Maybe(Callable)=None, **kwargs: Dict(Str)) -> Any:
+    if message is None:
+        return None
+
     if not kwargs:
         full_message = message
     else:
