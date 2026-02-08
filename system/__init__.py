@@ -3,7 +3,7 @@ from typing import TYPE_CHECKING as __lsp__
 
 __all__ = [
     "Data", "Status", "Message", "message",
-    "Handler", "handler",
+    "Handler",
     "System",
     "Component",
     "new_handler", "new_system", "new_component"
@@ -14,7 +14,6 @@ __lazy__ = {
     "Status":        ("system.mods.message", "Status"),
     "Message":       ("system.mods.message", "Message"),
     "message":       ("system.mods.message", "message"),
-    "handler":       ("system.mods.handler", "handler"),
     "Handler":       ("system.mods.handler", "Handler"),
     "System":        ("system.mods.system_", "System"),
     "Component":     ("system.mods.component", "Component"),
@@ -40,7 +39,7 @@ def __dir__():
 
 if __lsp__:
     from system.mods.message   import Data, Status, Message, message
-    from system.mods.handler   import Handler, handler
+    from system.mods.handler   import Handler
     from system.mods.system_   import System
     from system.mods.component import Component
     from system.mods.builder   import new_handler, new_system, new_component
