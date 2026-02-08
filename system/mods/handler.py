@@ -81,6 +81,7 @@ class handler:
         return Message(
             message=_message(message=message, **kwargs),
             data=data,
+            status="success",
             success=True,
             code=code
         )
@@ -95,6 +96,7 @@ class handler:
         return Message(
             message=_message(message=message, **kwargs),
             data=data,
+            status="failure",
             success=False,
             code=code
         )

@@ -46,11 +46,13 @@ class Message:
       - message: human-readable string
       - data:    arbitrary structured data
       - success: whether the operation succeeded
+      - status:  the operation status
       - code:    numeric code (HTTP code, error code, etc.)
     """
     message: Maybe(Str)=None
     data:    Maybe(Data)=None
     success: Maybe(Bool)=None
+    status:  Maybe(Status)=None
     code:    Maybe(Int)=None
 
 Message.__display__ = 'Message'

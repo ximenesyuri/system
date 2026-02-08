@@ -178,8 +178,7 @@ class HandlerFactory:
             code=base.code,
         )
 
-
-def new_handler(*, message=Message, validators=()):
+def new_handler(message=Message, validators=()):
     return HandlerFactory(
         msg_type=message,
         validators=validators,
