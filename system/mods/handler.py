@@ -60,11 +60,31 @@ class Handler(Typed, metaclass=HANDLER):
 
 class handler:
     propagate = _propagate
+
+    @typed
+    def call(
+        handler: Handler,
+        callback:  Maybe(Callable) = None,
+        propagate: Status="failure",
+        **kwargs:  Dict(Str),
+    ) -> Maybe(Message):
+        h = handler
+        res = h(**kwargs)
+
+        if propagate == "failure":
+            _propagate.failure(res)
+        if propagate == "success":
+            _propagate.success(res)
+
+        if callback:
+            return callback(res)
+        return res
+
     @typed
     def data(
         handler: Handler,
         callback:  Maybe(Callable) = None,
-        propagate: Status = "success",
+        propagate: Status="failure",
         **kwargs:  Dict(Str),
     ) -> Maybe(Data):
         h = handler
@@ -145,6 +165,7 @@ class handler:
         if f is not None and callable(f):
             return _decorate(f)
 
+        _decorate.call = cls.call
         _decorate.data = cls.data
         _decorate.success = cls.success
         _decorate.failure = cls.failure

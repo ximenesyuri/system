@@ -92,6 +92,7 @@ class HandlerFactory:
         if f is not None and callable(f):
             return _decorate(f)
 
+        _decorate.call = self.call
         _decorate.data = self.data
         _decorate.success = self.success
         _decorate.failure = self.failure
@@ -162,6 +163,9 @@ class HandlerFactory:
 
             return h
         return decorator
+
+    def call(self, *args, **kwargs):
+        return handler.call(*args, **kwargs)
 
     def data(self, *args, **kwargs):
         return handler.data(*args, **kwargs)
