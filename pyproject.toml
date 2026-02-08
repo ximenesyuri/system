@@ -1,16 +1,15 @@
 [project]
 name = "system"
 version = "0.0.0"
-description = ""
+description = "The system builder from typedsystem."
 readme = "README.md"
 requires-python = ">=3.9"
 license = {text = "MIT"}
 authors = [
-    {"name" = "Your Name", "email" = "you@email.com"},
+    {"name" = "Yuri Ximenes", "email" = "ximenesyuri@gmx.ie"},
 ]
 dependencies = [
-    "typed @ git+https://github.com/ximenesyuri/typed",
-    "utils @ git+https://github.com/ximenesyuri/utils",
+    "typed @ git+https://github.com/ximenesyuri/typed"
 ]
 
 [build-system]

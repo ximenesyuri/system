@@ -1,17 +1,46 @@
-from utils.general import lazy
+from importlib import import_module as __import__
+from typing import TYPE_CHECKING as __lsp__
 
-__imports__ = {
-    "Message":   "system.main",
-    "Action":    "system.main",
-    "Result":    "system.main",
-    "result":    "system.main",
-    "Client":    "system.main",
-    "Data":      "system.main",
-    "Status":    "system.main",
+__all__ = [
+    "Data", "Status", "Message", "message",
+    "Handler", "handler",
+    "System",
+    "Component",
+    "new_handler", "new_system", "new_component"
+]
+
+__lazy__ = {
+    "Data":          ("system.mods.message", "Data"),
+    "Status":        ("system.mods.message", "Status"),
+    "Message":       ("system.mods.message", "Message"),
+    "message":       ("system.mods.message", "message"),
+    "handler":       ("system.mods.handler", "handler"),
+    "Handler":       ("system.mods.handler", "Handler"),
+    "System":        ("system.mods.system_", "System"),
+    "Component":     ("system.mods.component", "Component"),
+    "new_handler":   ("system.mods.builder", "new_handler"),
+    "new_system":    ("system.mods.handler", "new_system"),
+    "new_component": ("system.mods.handler", "new_component"),
 }
 
-if lazy(__imports__):
-    from system.main import (
-        Message, Action, Result, result,
-        Client, Data, Status
-    )
+def __getattr__(name):
+    try:
+        module_name, attr_name = __lazy__[name]
+    except KeyError:
+        raise AttributeError(f"module {__name__!r} has no attribute {name!r}") from None
+
+    module = __import__(module_name)
+    attr = getattr(module, attr_name)
+    globals()[name] = attr
+    return attr
+
+
+def __dir__():
+    return sorted(set(globals().keys()) | set(__all__))
+
+if __lsp__:
+    from system.mods.message   import Data, Status, Message, message
+    from system.mods.handler   import Handler, handler
+    from system.mods.system_   import System
+    from system.mods.component import Component
+    from system.mods.builder   import new_handler, new_system, new_component
