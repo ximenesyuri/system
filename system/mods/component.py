@@ -147,3 +147,11 @@ class Component:
         )
         setattr(cls, name, derived)
         return derived
+
+    @classmethod
+    def allow(cls, component_type) -> None:
+        allowed = getattr(cls, "_allowed_components", None)
+        if allowed is None:
+            allowed = set()
+        allowed.add(component_type)
+        cls._allowed_components = allowed
