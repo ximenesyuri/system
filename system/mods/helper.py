@@ -24,7 +24,6 @@ def _is_direct_child(prefix, path):
         return False
     return path[:len(prefix)] == prefix
 
-
 def _relative_prefix(child, parent):
     cp = tuple(getattr(child, "prefix", ()))
     pp = tuple(getattr(parent, "prefix", ()))
@@ -194,29 +193,6 @@ class _PathProxy:
 
         return coro_or_msg
 
-
-
-class _GetProxy:
-    def __init__(self, owner, base_path=()):
-        self._owner = owner
-        self._path = tuple(base_path)
-
-    def __getattr__(self, item: str):
-        if item.startswith("_"):
-            raise AttributeError(item)
-
-        new_path = self._path + (item,)
-        try:
-            return _get_entity(self._owner, new_path)
-        except KeyError as exc:
-            raise AttributeError(str(exc)) from None
-
-    def __call__(self, path):
-        rel = _normalize_path(path)
-        full = self._path + rel
-        return _get_entity(self._owner, full)
-
-
 class _ListProxy:
     def __init__(self, owner, base_path=()):
         self._owner = owner
@@ -232,7 +208,6 @@ class _ListProxy:
         rel = _normalize_path(path) if path is not None else ()
         full = self._path + rel
         return _list_entities(self._owner, full, kind=kind)
-
 
 class _InfoProxy:
     def __init__(self, owner, base_path=()):

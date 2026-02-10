@@ -1,9 +1,10 @@
 from typed import Maybe, Str
-from system.mods.helper import _normalize_path, _InfoProxy
+from system.mods.helper import _normalize_path, _InfoProxy, _get_entity
 from system.mods.handler import (
+    Message,
     Handler,
     HandlerInfo,
-    register_handler,
+    register_handler
 )
 
 class COMPONENT(type):
@@ -88,7 +89,7 @@ def include_method(self, component, prefix=None):
     return component
 
 class Component:
-    def __init__(self, name: Str="component", desc: Str="", prefix: Maybe(Str)=None):
+    def __init__(self, name: Str="component", desc: Str="", prefix: Maybe(Str)=None, attach=None, allow=None):
         self.name = name
         self.desc = desc
         self.prefix = _normalize_path(prefix)
@@ -96,6 +97,20 @@ class Component:
         self.system = None
         self._local_handlers = {}
         self._components = []
+        self._allowed_components = set()
+
+        from system.mods.builder import HandlerFactory
+        if attach:
+            for item in attach:
+                if isinstance(item, HandlerFactory):
+                    name = f"handler_{len(self._local_handlers)}"
+                    self._attach_local(name=name, handler=item)
+                elif hasattr(item, 'name'):
+                    self._attach_local(name=item.name, handler=item)
+
+        if allow:
+            for component_type in allow:
+                self._allow_local(component_type)
 
         for h_name, h in getattr(self.__class__, "__static_handlers__", {}).items():
             rel_path = (h_name,)
@@ -119,7 +134,86 @@ class Component:
 
             self.include_component(child)
 
+    def _attach_local(self, *, name: str, handler, kind=None, desc=None, validators=()):
+        """Local version of attach for this instance only"""
+        base = handler
+        if not hasattr(base, "with_validators"):
+            raise TypeError(
+                "handler must be a HandlerFactory produced by new_handler() "
+                "or Handler(message=...)."
+            )
+
+        derived = base.with_validators(
+            *validators,
+            name=name,
+            kind=(kind or name),
+            desc=desc,
+        )
+        rel_path = _normalize_path(name)
+        entry = HandlerInfo(
+            path=rel_path,
+            name=name,
+            func=derived,
+            owner=self,
+            meta={"kind": kind or name, "desc": desc},
+        )
+        self._local_handlers[rel_path] = entry
+        if not hasattr(self, name):
+            setattr(self, name, derived)
+
+        system = getattr(self, "system", None)
+        if system is not None:
+            abs_path = self.prefix + rel_path
+            register_handler(
+                system,
+                path=abs_path,
+                name=entry.name,
+                func=derived,
+                owner=self,
+                meta=entry.meta,
+            )
+
+        return derived
+
+    def _allow_local(self, component_type) -> None:
+        self._allowed_components.add(component_type)
+
+    def __call__(self, *args, **kwargs):
+        if 'handler' in kwargs:
+            handler_path = kwargs.pop('handler')
+            return self.call(handler_path, **kwargs)
+
+        if args and len(args) == 1 and kwargs:
+            path = args[0]
+            normalized_path = _normalize_path(path)
+            handler_func = _get_entity(self, normalized_path)
+            return handler_func(**kwargs)
+
+        if args:
+            path = args[0]
+            normalized_path = _normalize_path(path)
+            return _get_entity(self, normalized_path)
+        raise TypeError("Component must be called with either a path or handler parameter")
+
+    def __getitem__(self, path):
+        normalized_path = _normalize_path(path)
+        return _get_entity(self, normalized_path)
+
     def include(self, component, prefix=None):
+        cls = self.__class__
+        global_allowed = getattr(cls, "_allowed_components", set())
+        local_allowed = getattr(self, "_allowed_components", set())
+        allowed = global_allowed | local_allowed
+        comp_cls = component.__class__
+
+        if not (comp_cls is cls or issubclass(comp_cls, cls)):
+            if not any(issubclass(comp_cls, a) for a in allowed):
+                raise TypeError(
+                    f"{cls.__name__} is not allowed to include components of type "
+                    f"{comp_cls.__name__}. Call {cls.__name__}.allow({comp_cls.__name__}) or "
+                    f"pass allow=[{comp_cls.__name__}] to the constructor."
+                )
+
         return include_method(self, component, prefix)
 
     @classmethod
@@ -155,3 +249,21 @@ class Component:
             allowed = set()
         allowed.add(component_type)
         cls._allowed_components = allowed
+
+    def get_handler_info(self, path):
+        """Helper method to get handler info by path"""
+        normalized_path = _normalize_path(path)
+        return self._local_handlers.get(normalized_path)
+
+    async def call(self, path, *args, **kwargs):
+        """Call a handler by path"""
+        info = self.get_handler_info(path)
+        if info is None:
+            raise KeyError(f"No handler registered at path {path!r}")
+        result = info.func(*args, **kwargs)
+        if not isinstance(result, Message):
+            raise TypeError(
+                f"Handler at path {path!r} returned {type(result)!r}, "
+                "expected a subtype of Message"
+            )
+        return result

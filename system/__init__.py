@@ -2,7 +2,7 @@ from importlib import import_module as __import__
 from typing import TYPE_CHECKING as __lsp__
 
 __all__ = [
-    "Data", "Status", "Message", "message",
+    "Data", "Status", "Message", "propagate",
     "Handler",
     "System",
     "Component",
@@ -10,14 +10,14 @@ __all__ = [
 ]
 
 __lazy__ = {
-    "Data":      ("system.mods.message", "Data"),
-    "Status":    ("system.mods.message", "Status"),
-    "Message":   ("system.mods.message", "Message"),
-    "message":   ("system.mods.message", "message"),
-    "Handler":   ("system.mods.handler", "Handler"),
-    "System":    ("system.mods.system_", "System"),
+    "Data":      ("system.mods.message",   "Data"),
+    "Status":    ("system.mods.message",   "Status"),
+    "Message":   ("system.mods.message",   "Message"),
+    "propagate": ("system.mods.message",   "propagate"),
+    "Handler":   ("system.mods.handler",   "Handler"),
+    "System":    ("system.mods.system_",   "System"),
     "Component": ("system.mods.component", "Component"),
-    "new":       ("system.mods.builder", "new")
+    "new":       ("system.mods.builder",    "new")
 }
 
 def __getattr__(name):
@@ -36,7 +36,7 @@ def __dir__():
     return sorted(set(globals().keys()) | set(__all__))
 
 if __lsp__:
-    from system.mods.message   import Data, Status, Message, message
+    from system.mods.message   import Data, Status, Message, propagate
     from system.mods.handler   import Handler
     from system.mods.system_   import System
     from system.mods.component import Component
