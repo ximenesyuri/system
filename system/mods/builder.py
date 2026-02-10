@@ -120,7 +120,7 @@ class HandlerFactory:
             if self.desc is not None:
                 meta_full.setdefault("desc", self.desc)
 
-            if hasattr(owner_obj, "_local_handlers"):
+            if hasattr(owner_obj, "_local_handlers") and not isinstance(owner_obj, System):
                 entry = HandlerInfo(
                     path=rel_path,
                     name=h_name,
