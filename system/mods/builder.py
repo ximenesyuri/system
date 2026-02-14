@@ -178,6 +178,7 @@ class HandlerFactory:
             message=base.message,
             data=base.data,
             success=base.success,
+            status=base.status,
             code=base.code
         )
 
@@ -189,6 +190,7 @@ class HandlerFactory:
             message=base.message,
             data=base.data,
             success=base.success,
+            status=base.status,
             code=base.code,
         )
 
@@ -332,4 +334,3 @@ class new:
     handler = new_handler
     system = new_system
     component = new_component
-
