@@ -224,3 +224,4 @@ class _InfoProxy:
         rel = _normalize_path(path) if path is not None else ()
         full = self._path + rel
         return _info_entity(self._owner, full)
+

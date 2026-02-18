@@ -1,11 +1,9 @@
-# /home/yx/files/dev/prj/py/system/system/mods/system_.py
+import inspect
+import asyncio
 from system.mods.helper import _PathProxy, _InfoProxy, _ListProxy, _normalize_path, _get_entity
 from system.mods.message import Message
 from system.mods.handler import Handler, register_handler
 from system.mods.component import include_method
-
-import inspect
-import asyncio
 
 class SYSTEM(type):
     def __new__(mcls, name, bases, namespace, **kwargs):

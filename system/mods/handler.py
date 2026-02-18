@@ -2,7 +2,7 @@ from functools import wraps
 from typed import typed, name, Typed, Lazy, model, Tuple, Str, Any, Dict, Maybe, Int
 from typed.meta import TYPED
 from typed.types import Callable
-from system.mods.message import Status, Data, Message, Propagate, propagate as _propagate, message as _message
+from system.mods.message import Status, Data, Message, Propagate, propagate as _propagate, message as _message, _convert_message
 from system.mods.helper import _normalize_path, _InfoProxy
 
 class HANDLER(TYPED):
@@ -139,7 +139,10 @@ class handler:
                     try:
                         return func(*args, **kw)
                     except Propagate as exc:
-                        return exc.msg
+                        msg = exc.msg
+                        codomain = getattr(typed_f, "cod", Message)
+                        msg = _convert_message(msg, codomain)
+                        return msg
                 except BaseException as e:
                     if Error is not None and not isinstance(e, Propagate):
                         msg = error_message if error_message is not None else str(e)

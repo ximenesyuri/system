@@ -66,13 +66,15 @@ class Propagate(Exception):
 
 class propagate:
     @typed
-    def failure(msg: Message) -> Message:
+    def failure(msg: Message, **overrides: Dict(Str)) -> Message:
+        msg = _with_overrides(msg, **overrides)
         if not msg.success:
             raise Propagate(msg)
         return msg
 
     @typed
-    def success(msg: Message) -> Message:
+    def success(msg: Message, **overrides: Dict(Str)) -> Message:
+        msg = _with_overrides(msg, **overrides)
         if msg.success:
             raise Propagate(msg)
         return msg
@@ -107,3 +109,21 @@ def propagator(f=None, **kwargs):
     if f is not None and callable(f):
         return decorator(f)
     return decorator
+
+def _plain_message(msg) -> dict:
+    return {
+        "status":  msg.status,
+        "success": msg.success,
+        "code":    msg.code,
+        "message": msg.message,
+        "data":    msg.data,
+    }
+
+def _with_overrides(msg, **overrides):
+    init = _plain_message(msg)
+    init.update(overrides)
+    return msg.__class__(**init)
+
+def _convert_message(msg, new_model):
+    init = _plain_message(msg)
+    return new_model(**init)

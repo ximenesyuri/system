@@ -4,7 +4,7 @@ from typed import name
 from system.mods.system_ import System, SYSTEM
 from system.mods.component import Component, COMPONENT, include_method
 from system.mods.handler import handler, HandlerInfo, register_handler, Handler
-from system.mods.message import Message, message as _message
+from system.mods.message import Message, message as _message, _plain_message
 from system.mods.helper import _normalize_path
 
 class _ClassOnly:
@@ -172,35 +172,41 @@ class HandlerFactory:
     def data(self, *args, **kwargs):
         return handler.data(*args, **kwargs)
 
-    def success(self, message=_UNSET, data=_UNSET, code=_UNSET, **kwargs):
-        init = {
-            "status": "success",
-            "success": True,
-        }
+    def success(self, message=_UNSET, data=_UNSET, code=_UNSET, obj=_UNSET, **kwargs):
+        if obj is not _UNSET:
+            if not isinstance(obj, Message):
+                raise TypeError("obj must be an instance of Message")
+            init = _plain_message(obj)
+        else:
+            init = {}
+
+        init["status"] = "success"
+        init["success"] = True
 
         if message is not _UNSET:
             init["message"] = _message(message=message, **kwargs)
-
         if data is not _UNSET:
             init["data"] = data
-
         if code is not _UNSET:
             init["code"] = code
 
         return self.msg_type(**init)
 
-    def failure(self, message=_UNSET, data=_UNSET, code=_UNSET, **kwargs):
-        init = {
-            "status": "failure",
-            "success": False,
-        }
+    def failure(self, message=_UNSET, data=_UNSET, code=_UNSET, obj=_UNSET, **kwargs):
+        if obj is not _UNSET:
+            if not isinstance(obj, Message):
+                raise TypeError("obj must be an instance of Message")
+            init = _plain_message(obj)
+        else:
+            init = {}
+
+        init["status"] = "failure"
+        init["success"] = False
 
         if message is not _UNSET:
             init["message"] = _message(message=message, **kwargs)
-
         if data is not _UNSET:
             init["data"] = data
-
         if code is not _UNSET:
             init["code"] = code
 
