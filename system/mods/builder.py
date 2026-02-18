@@ -4,7 +4,7 @@ from typed import name
 from system.mods.system_ import System, SYSTEM
 from system.mods.component import Component, COMPONENT, include_method
 from system.mods.handler import handler, HandlerInfo, register_handler, Handler
-from system.mods.message import Message
+from system.mods.message import Message, message as _message
 from system.mods.helper import _normalize_path
 
 class _ClassOnly:
@@ -21,6 +21,8 @@ class _ClassOnly:
 
 def class_only(func):
     return _ClassOnly(func)
+
+_UNSET = object()
 
 class HandlerFactory:
     def __init__(self, *, msg_type=Message, name="handler", kind=None, validators=(), desc=None, base_kwargs=None) -> None:
@@ -170,29 +172,39 @@ class HandlerFactory:
     def data(self, *args, **kwargs):
         return handler.data(*args, **kwargs)
 
-    def success(self, message=None, data=None, code=None, **kwargs):
-        base = handler.success(message=message, data=data, code=code, **kwargs)
-        if isinstance(base, self.msg_type):
-            return base
-        return self.msg_type(
-            message=base.message,
-            data=base.data,
-            success=base.success,
-            status=base.status,
-            code=base.code
-        )
+    def success(self, message=_UNSET, data=_UNSET, code=_UNSET, **kwargs):
+        init = {
+            "status": "success",
+            "success": True,
+        }
 
-    def failure(self, message=None, data=None, code=None, **kwargs):
-        base = handler.failure(message=message, data=data, code=code, **kwargs)
-        if isinstance(base, self.msg_type):
-            return base
-        return self.msg_type(
-            message=base.message,
-            data=base.data,
-            success=base.success,
-            status=base.status,
-            code=base.code,
-        )
+        if message is not _UNSET:
+            init["message"] = _message(message=message, **kwargs)
+
+        if data is not _UNSET:
+            init["data"] = data
+
+        if code is not _UNSET:
+            init["code"] = code
+
+        return self.msg_type(**init)
+
+    def failure(self, message=_UNSET, data=_UNSET, code=_UNSET, **kwargs):
+        init = {
+            "status": "failure",
+            "success": False,
+        }
+
+        if message is not _UNSET:
+            init["message"] = _message(message=message, **kwargs)
+
+        if data is not _UNSET:
+            init["data"] = data
+
+        if code is not _UNSET:
+            init["code"] = code
+
+        return self.msg_type(**init)
 
 def new_handler(message=Message, *, validators=(), name="handler", kind=None, desc=None, **kwargs):
     return Handler(
