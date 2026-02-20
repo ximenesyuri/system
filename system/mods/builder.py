@@ -187,8 +187,12 @@ class HandlerFactory:
             init["message"] = _message(message=message, **kwargs)
         if data is not _UNSET:
             init["data"] = data
+
         if code is not _UNSET:
             init["code"] = code
+        else:
+            if "code" in init and init["code"] is None:
+                init.pop("code")
 
         return self.msg_type(**init)
 
@@ -207,8 +211,12 @@ class HandlerFactory:
             init["message"] = _message(message=message, **kwargs)
         if data is not _UNSET:
             init["data"] = data
+
         if code is not _UNSET:
             init["code"] = code
+        else:
+            if "code" in init and init["code"] is None:
+                init.pop("code")
 
         return self.msg_type(**init)
 
