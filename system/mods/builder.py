@@ -220,6 +220,22 @@ class HandlerFactory:
 
         return self.msg_type(**init)
 
+    def propagate(self, obj, *args, **kwargs):
+        if not isinstance(obj, Message):
+            raise TypeError("obj must be an instance of Message")
+
+        if obj.success is True:
+            return self.success(obj, *args, **kwargs)
+
+        if obj.success is False:
+            return self.failure(obj, *args, **kwargs)
+
+        init = _plain_message(obj)
+        if kwargs:
+            init.update(kwargs)
+
+        return self.msg_type(**init)
+
 def new_handler(message=Message, *, validators=(), name="handler", kind=None, desc=None, **kwargs):
     return Handler(
         message,
