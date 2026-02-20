@@ -172,7 +172,7 @@ class HandlerFactory:
     def data(self, *args, **kwargs):
         return handler.data(*args, **kwargs)
 
-    def success(self, message=_UNSET, data=_UNSET, code=_UNSET, obj=_UNSET, **kwargs):
+    def success(self, obj=_UNSET, message=_UNSET, data=_UNSET, code=_UNSET, **kwargs):
         if obj is not _UNSET:
             if not isinstance(obj, Message):
                 raise TypeError("obj must be an instance of Message")
@@ -192,7 +192,7 @@ class HandlerFactory:
 
         return self.msg_type(**init)
 
-    def failure(self, message=_UNSET, data=_UNSET, code=_UNSET, obj=_UNSET, **kwargs):
+    def failure(self, obj=_UNSET, message=_UNSET, data=_UNSET, code=_UNSET, **kwargs):
         if obj is not _UNSET:
             if not isinstance(obj, Message):
                 raise TypeError("obj must be an instance of Message")
