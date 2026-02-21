@@ -185,6 +185,10 @@ class HandlerInfo:
 
 
 def register_handler(system, path, name, func, owner, meta=None):
+
+    if not hasattr(system, "_handlers"):
+        system._handlers = {}
+
     info = HandlerInfo(
         path=path,
         name=name,
