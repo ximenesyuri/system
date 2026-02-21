@@ -31,7 +31,6 @@ class HandlerFactory:
         self.kind = kind or name
         self.validators = tuple(validators)
         self.desc = desc
-        self.propagate = handler.propagate
         self.base_kwargs = dict(base_kwargs or {})
 
     def with_validators(self, *validators, name=None, kind=None, desc=None):
