@@ -39,8 +39,10 @@ class COMPONENT(type):
 
 def include_method(self, component, prefix=None):
     def _attach(component, system, absolute_prefix=None):
-        if component.system is not None and component.system is not system:
-            raise ValueError("Component is already attached to a different System")
+        existing = getattr(component, "system", None)
+        if existing is not None and existing is not system:
+            if hasattr(existing, "_components_by_prefix") and hasattr(system, "_components_by_prefix"):
+                raise ValueError("Component is already attached to a different System")
 
         component.system = system
         if absolute_prefix is not None:
@@ -74,18 +76,17 @@ def include_method(self, component, prefix=None):
         abs_prefix = component.prefix if not getattr(self, "prefix", None) else self.prefix + component.prefix
         _attach(component, system, absolute_prefix=abs_prefix)
     else:
-        _attach(component, self, absolute_prefix=component.prefix)
-
+        _attach(component, self, absolute_prefix=component.prefix)  # optional; can keep or drop
         comp_name = getattr(component, "name", None)
         if comp_name:
             if hasattr(self, "get"):
                 setattr(self.get, comp_name, component)
-
             if hasattr(self, "info"):
                 setattr(self.info, comp_name, _InfoProxy(self, (comp_name,)))
 
         if component.name and not hasattr(self, component.name):
             setattr(self, component.name, component)
+
     return component
 
 class Component:
